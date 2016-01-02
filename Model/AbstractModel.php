@@ -14,14 +14,14 @@ class AbstractModel extends \Magento\Framework\Model\AbstractModel
      *
      * @var array
      */
-    protected $_store_field_data = [];
+    protected $_storeFieldData = [];
 
     /**
      * Config, which contains data about store related fields and they types (in DB)
      *
      * @var array
      */
-    protected $_store_field_config = [];
+    protected $_storeFieldConfig = [];
 
     /**
      * @param \Magento\Framework\Model\Context $context
@@ -50,7 +50,7 @@ class AbstractModel extends \Magento\Framework\Model\AbstractModel
      */
     protected function _initStoreField($fieldName, $type)
     {
-        $this->_store_field_config[$fieldName] = $type;
+        $this->_storeFieldConfig[$fieldName] = $type;
     }
 
     /**
@@ -74,7 +74,7 @@ class AbstractModel extends \Magento\Framework\Model\AbstractModel
      */
     private function _getStoreFieldData($key, $storeId)
     {
-        $data = isset($this->_store_field_data[$storeId]) ? $this->_store_field_data[$storeId] : [];
+        $data = isset($this->_storeFieldData[$storeId]) ? $this->_storeFieldData[$storeId] : [];
 
         if (!$key) {
             return $data;
@@ -105,7 +105,7 @@ class AbstractModel extends \Magento\Framework\Model\AbstractModel
      */
     private function isStoreRelatedField($key)
     {
-        return isset($this->_store_field_config[$key]);
+        return isset($this->_storeFieldConfig[$key]);
     }
 
     /**
@@ -129,8 +129,8 @@ class AbstractModel extends \Magento\Framework\Model\AbstractModel
      */
     protected function initStoreData($storeId)
     {
-        if (!isset($this->_store_field_data[$storeId])) {
-            $this->_store_field_data[$storeId] = [];
+        if (!isset($this->_storeFieldData[$storeId])) {
+            $this->_storeFieldData[$storeId] = [];
         }
     }
 
@@ -144,9 +144,9 @@ class AbstractModel extends \Magento\Framework\Model\AbstractModel
         $this->initStoreData($storeId);
 
         if ($key === (array)$key) {
-            $this->_store_field_data[$storeId] = $key;
+            $this->_storeFieldData[$storeId] = $key;
         } else {
-            $this->_store_field_data[$storeId][$key] = $value;
+            $this->_storeFieldData[$storeId][$key] = $value;
         }
     }
 
@@ -163,6 +163,17 @@ class AbstractModel extends \Magento\Framework\Model\AbstractModel
             $storeId = $this->getStoreId();
         }
 
+        if ($key === (array)$key) {
+            if ($this->_storeFieldConfig !== $key) {
+                $this->_hasDataChanges = true;;
+            }
+        } else {
+            if (!array_key_exists($key, $this->_storeFieldConfig) ||
+                $this->_storeFieldConfig[$key] !== $value) {
+                $this->_hasDataChanges = true;
+            }
+        }
+
         $this->_setStoreFieldData($key, $value, $storeId);
     }
 
@@ -172,7 +183,8 @@ class AbstractModel extends \Magento\Framework\Model\AbstractModel
     public function setData($key, $value = null)
     {
         if ($key === (array)$key) {
-            $storeData = array_intersect_key($key, $this->_store_field_config);
+            $storeData = array_intersect_key($key, $this->_storeFieldConfig);
+
             $this->setStoreFieldData($storeData);
 
             parent::setData(array_diff_key($key, $storeData), $value);
@@ -180,7 +192,7 @@ class AbstractModel extends \Magento\Framework\Model\AbstractModel
             if ($this->isStoreRelatedField($key)) {
                 $this->setStoreFieldData($key, $value);
             } else {
-                return parent::setData($key, $value);
+               parent::setData($key, $value);
             }
         }
 
