@@ -7,7 +7,7 @@ class AbstractModel extends \Magento\Framework\Model\AbstractModel
     /**
      * @var \Magento\Store\Model\StoreManagerInterface
      */
-    protected $storeManger;
+    protected $storeManager;
 
     /**
      * Like DataObject _data, but related for stores
